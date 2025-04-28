@@ -19,7 +19,8 @@ class ArknightsApp:
         self.root = root
         self.root.title("Arknights Neural Network")
         self.auto_fetch_running = False
-        self.first_running = True
+        self.no_region = True
+        self.first_recognize = True
 
         self.left_monsters = {}
         self.right_monsters = {}
@@ -261,16 +262,17 @@ class ArknightsApp:
         else:
             screenshot = None
 
-        if self.first_running:
-            self.main_roi = [
-                (int(0.2479 * loadData.screen_width), int(0.8444 * loadData.screen_height)),
-                (int(0.7526 * loadData.screen_width), int(0.9491 * loadData.screen_height))
-            ]
-            adb_path = r".\platform-tools\adb.exe"
-            device_serial = '127.0.0.1:5555'  # 指定设备序列号
-            subprocess.run(f'{adb_path} connect {device_serial}', shell=True, check=True)
+        if self.no_region: # 如果尚未选择区域，从adb获取截图
+            if self.first_recognize: # 首次识别时，尝试连接adb
+                self.main_roi = [
+                    (int(0.2479 * loadData.screen_width), int(0.8444 * loadData.screen_height)),
+                    (int(0.7526 * loadData.screen_width), int(0.9491 * loadData.screen_height))
+                ]
+                adb_path = loadData.adb_path # 从loadData获取adb路径
+                device_serial = loadData.device_serial # 从loadData获取设备号
+                subprocess.run(f'{adb_path} connect {device_serial}', shell=True, check=True)
+                self.first_recognize = False
             screenshot = loadData.capture_screenshot()
-
         ref_images = recognize.load_ref_images()
 
         results = recognize.process_regions(self.main_roi, ref_images, screenshot)
@@ -294,7 +296,7 @@ class ArknightsApp:
 
     def reselect_roi(self):
         self.main_roi = recognize.select_roi()
-        self.first_running = False
+        self.no_region = False
 
     def start_training(self):
         threading.Thread(target=self.train_model).start()
