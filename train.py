@@ -96,7 +96,7 @@ class ArknightsDataset(Dataset):
 
 
 class UnitAwareTransformer(nn.Module):
-    def __init__(self, num_units=35, embed_dim=128, num_heads=8, num_layers=3):
+    def __init__(self, num_units=35, embed_dim=128, num_heads=8, num_layers=4):
         super().__init__()
         self.num_units = num_units
         self.embed_dim = embed_dim
