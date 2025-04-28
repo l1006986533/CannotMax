@@ -160,20 +160,14 @@ def find_best_match(target, ref_images):
     if len(target.shape) == 2:
         target = cv2.cvtColor(target, cv2.COLOR_GRAY2BGR)
 
-    # 1. 灰度匹配
-    target_gray = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
-    target_gray = cv2.GaussianBlur(target_gray, (3, 3), 0)
-    _, target_gray = cv2.threshold(target_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-    # 2. RGB通道匹配
+    # RGB通道匹配
     target_r = target[:, :, 0]
     target_g = target[:, :, 1]
     target_b = target[:, :, 2]
-
-    # 对每个通道进行高斯模糊和二值化
-    for channel in [target_r, target_g, target_b]:
-        channel = cv2.GaussianBlur(channel, (3, 3), 0)
-        _, channel = cv2.threshold(channel, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # 高斯模糊
+    target_r = cv2.GaussianBlur(target_r, (5, 5), 0)
+    target_g = cv2.GaussianBlur(target_g, (5, 5), 0)
+    target_b = cv2.GaussianBlur(target_b, (5, 5), 0)
 
     for img_id, ref_img in ref_images.items():
         try:
@@ -184,22 +178,14 @@ def find_best_match(target, ref_images):
             # 调整参考图像大小以匹配目标图像
             ref_resized = cv2.resize(ref_img, (target.shape[1], target.shape[0]))
 
-            # 1. 灰度匹配
-            ref_gray = cv2.cvtColor(ref_resized, cv2.COLOR_BGR2GRAY)
-            ref_gray = cv2.GaussianBlur(ref_gray, (3, 3), 0)
-            _, ref_gray = cv2.threshold(ref_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-            diff_gray = cv2.absdiff(target_gray, ref_gray)
-            diff_value_gray = np.sum(diff_gray) / target.size
-
-            # 2. RGB通道匹配
+            # RGB通道匹配
             ref_r = ref_resized[:, :, 0]
             ref_g = ref_resized[:, :, 1]
             ref_b = ref_resized[:, :, 2]
-
-            # 对每个通道进行高斯模糊和二值化
-            for channel in [ref_r, ref_g, ref_b]:
-                channel = cv2.GaussianBlur(channel, (3, 3), 0)
-                _, channel = cv2.threshold(channel, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            # 高斯模糊
+            ref_r = cv2.GaussianBlur(ref_r, (5, 5), 0)
+            ref_g = cv2.GaussianBlur(ref_g, (5, 5), 0)
+            ref_b = cv2.GaussianBlur(ref_b, (5, 5), 0)
 
             # 分别计算RGB三个通道的差异
             diff_r = cv2.absdiff(target_r, ref_r)
@@ -211,11 +197,10 @@ def find_best_match(target, ref_images):
             diff_value_g = np.sum(diff_g) / target.size
             diff_value_b = np.sum(diff_b) / target.size
 
-            # 综合所有差异值（灰度匹配权重0.4，RGB通道匹配权重各0.2）
-            total_diff = (diff_value_gray * 0.4 +
-                          diff_value_r * 0.2 +
-                          diff_value_g * 0.2 +
-                          diff_value_b * 0.2)
+            # 综合所有差异值（RGB通道均分）
+            total_diff = (diff_value_r +
+                          diff_value_g +
+                          diff_value_b)
 
             if total_diff < min_diff:
                 min_diff = total_diff
