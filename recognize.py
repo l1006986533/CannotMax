@@ -165,9 +165,9 @@ def find_best_match(target, ref_images):
     target_g = target[:, :, 1]
     target_b = target[:, :, 2]
     # 高斯模糊
-    target_r = cv2.GaussianBlur(target_r, (5, 5), 0)
-    target_g = cv2.GaussianBlur(target_g, (5, 5), 0)
-    target_b = cv2.GaussianBlur(target_b, (5, 5), 0)
+    target_r = cv2.GaussianBlur(target_r, (3, 3), 0)
+    target_g = cv2.GaussianBlur(target_g, (3, 3), 0)
+    target_b = cv2.GaussianBlur(target_b, (3, 3), 0)
 
     for img_id, ref_img in ref_images.items():
         try:
@@ -183,9 +183,9 @@ def find_best_match(target, ref_images):
             ref_g = ref_resized[:, :, 1]
             ref_b = ref_resized[:, :, 2]
             # 高斯模糊
-            ref_r = cv2.GaussianBlur(ref_r, (5, 5), 0)
-            ref_g = cv2.GaussianBlur(ref_g, (5, 5), 0)
-            ref_b = cv2.GaussianBlur(ref_b, (5, 5), 0)
+            ref_r = cv2.GaussianBlur(ref_r, (3, 3), 0)
+            ref_g = cv2.GaussianBlur(ref_g, (3, 3), 0)
+            ref_b = cv2.GaussianBlur(ref_b, (3, 3), 0)
 
             # 分别计算RGB三个通道的差异
             diff_r = cv2.absdiff(target_r, ref_r)
